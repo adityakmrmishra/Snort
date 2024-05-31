@@ -1,9 +1,9 @@
 import React from 'react'
 import Hero from "./Hero"
-const MainHome = () => {
+const MainHome = ({setCapturedImage}) => {
     return (
         <>
-            <Hero />
+            <Hero setCapturedImage={setCapturedImage} />
         </>
     )
 }

@@ -1,3 +1,4 @@
-import MainImg from "./Images/homeImage.png"
+import MainImg from "./Images/homeImage.png";
+import CameraIcon from "./Images/capture.png";
 
-export { MainImg };
+export { MainImg , CameraIcon };
