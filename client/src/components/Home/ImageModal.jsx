@@ -1,14 +1,30 @@
 import React from "react";
+import { FaArrowLeft, FaArrowRight, FaTimes } from "react-icons/fa";
 
 const ImageModal = ({ image, onClose, onNext, onPrev }) => {
     return (
-        <div className="modal">
-            <div className="modal-content">
-                <span className="close text-black text-[2.5vw] -top-6 " onClick={onClose}>&times;</span>
-                <img src={image} alt="Captured" className="center-image" />
-                <div className="navigation-buttons">
-                    <button onClick={onPrev}>Previous</button>
-                    <button onClick={onNext}>Next</button>
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+            <div className="relative bg-white rounded-lg p-4 w-full max-w-3xl">
+                <button
+                    className="absolute top-2 right-2 text-black"
+                    onClick={onClose}
+                >
+                    <FaTimes size={24} />
+                </button>
+                <img src={image} alt="Preview" className="w-full h-auto rounded-lg" />
+                <div className="flex justify-between mt-4">
+                    <button
+                        className="p-2 bg-gray-800 text-white rounded-full"
+                        onClick={onPrev}
+                    >
+                        <FaArrowLeft />
+                    </button>
+                    <button
+                        className="p-2 bg-gray-800 text-white rounded-full"
+                        onClick={onNext}
+                    >
+                        <FaArrowRight />
+                    </button>
                 </div>
             </div>
         </div>
