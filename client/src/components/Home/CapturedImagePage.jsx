@@ -55,7 +55,15 @@ const CapturedImagePage = () => {
 
     return (
         <div className="bg-mainBG h-screen w-full flex flex-col items-center p-4">
-            <h3 className="text-white text-xl mb-4">Captured Images:</h3>
+        <div className="flex flex-row items-center w-full mb-4">
+                <button
+                    className="bg-blue-500 text-white px-4 py-2 rounded absolute top-4 left-4"
+                    onClick={() => navigate("/")}
+                >
+                    BACK
+                </button>
+                <h3 className="text-white text-xl mx-auto">Captured Images</h3>
+            </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 w-full max-w-screen-lg">
                 {images.length === 0 && <p className="text-white col-span-full">No images captured</p>}
                 {images.map((image, index) => (
@@ -89,14 +97,7 @@ const CapturedImagePage = () => {
                     </div>
                 ))}
             </div>
-            <div className="flex flex-row gap-2 mt-4">
-                <button
-                    className="bg-blue-500 text-white px-4 py-2 rounded"
-                    onClick={() => navigate("/")}
-                >
-                    BACK
-                </button>
-            </div>
+            
             {selectedImageIndex !== null && (
                 <ImageModal
                     image={images[selectedImageIndex]}
