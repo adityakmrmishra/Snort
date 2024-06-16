@@ -36,3 +36,17 @@ const App = () => {
 };
 
 export default App;
+
+
+// import React from 'react';
+// import WebcamWithFilter from './components/Home/WebcamWithFilter';
+
+// function App() {
+//   return (
+//     <div className="App">
+//       <WebcamWithFilter />
+//     </div>
+//   );
+// }
+
+// export default App;
