@@ -1,9 +1,10 @@
 import { openDB } from 'idb';
 
 const DB_NAME = 'mediaStorage';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 const IMG_STORE = 'images';
 const VID_STORE = 'videos';
+const CMT_STORE = 'cmt_images'; // New store for custom images
 
 const initDB = async () => {
   return openDB(DB_NAME, DB_VERSION, {
@@ -13,6 +14,9 @@ const initDB = async () => {
       }
       if (!db.objectStoreNames.contains(VID_STORE)) {
         db.createObjectStore(VID_STORE, { keyPath: 'id', autoIncrement: true });
+      }
+      if (!db.objectStoreNames.contains(CMT_STORE)) {
+        db.createObjectStore(CMT_STORE, { keyPath: 'id', autoIncrement: true });
       }
     },
   });
@@ -46,4 +50,19 @@ export const addVideo = async (videoData) => {
 export const deleteVideoById = async (id) => {
   const db = await initDB();
   await db.delete(VID_STORE, id);
+};
+
+export const getAllCustomImages = async () => {
+  const db = await initDB();
+  return db.getAll(CMT_STORE);
+};
+
+export const addCustomImage = async (image) => {
+  const db = await initDB();
+  await db.add(CMT_STORE, { image });
+};
+
+export const deleteCustomImageById = async (id) => {
+  const db = await initDB();
+  await db.delete(CMT_STORE, id);
 };

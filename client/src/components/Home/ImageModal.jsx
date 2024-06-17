@@ -3,8 +3,8 @@ import { FaArrowLeft, FaArrowRight, FaTimes } from "react-icons/fa";
 
 const ImageModal = ({ image, onClose, onNext, onPrev }) => {
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
-            <div className="relative bg-white rounded-lg p-4 w-full max-w-3xl">
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50" onClick={onClose}>
+            <div className="relative bg-white rounded-lg p-4 w-full max-w-lg" onClick={(e) => e.stopPropagation()}>
                 <button
                     className="absolute top-2 right-2 text-black"
                     onClick={onClose}

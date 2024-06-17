@@ -6,6 +6,7 @@ import * as faceapi from "face-api.js";
 import {
   addImage,
   addVideo,
+  addCustomImage
 } from "./db"; // Assuming db.js is in the same directory
 
 const Hero = ({ setCapturedImage }) => {
@@ -20,6 +21,7 @@ const Hero = ({ setCapturedImage }) => {
   const [isRecording, setIsRecording] = useState(false);
   const overlayImageRef = useRef(new Image());
   const lastLandmarksRef = useRef(null);
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     const loadModels = async () => {
@@ -119,7 +121,7 @@ const Hero = ({ setCapturedImage }) => {
         const offsetX = jaw[0].x - faceWidth * 0.7; // Adjusted for better coverage
         const offsetY = nose[0].y - faceHeight * 1.4; // Adjusted for better coverage
 
-        context.drawImage(overlayImageRef.current, offsetX, offsetY, faceWidth * 2.5, faceHeight * 3.2); // Adjusted scale
+        context.drawImage(overlayImageRef.current, offsetX, offsetY, faceWidth * 2.5, faceHeight * 3.6); // Adjusted scale
         context.restore();
       }
 
@@ -204,7 +206,7 @@ const Hero = ({ setCapturedImage }) => {
         const offsetX = jaw[0].x - faceWidth * 0.7; // Adjusted for better coverage
         const offsetY = nose[0].y - faceHeight * 1.4; // Adjusted for better coverage
 
-        context.drawImage(overlayImage, offsetX, offsetY, faceWidth * 2.5, faceHeight * 3.2); // Adjusted scale
+        context.drawImage(overlayImage, offsetX, offsetY, faceWidth * 2.5, faceHeight * 3.6); // Adjusted scale
         context.restore();
       }
 
@@ -223,6 +225,68 @@ const Hero = ({ setCapturedImage }) => {
         navigate("/captured");
       }, 300);
     }
+  };
+
+  const handleFileChange = async (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const img = new Image();
+      img.src = URL.createObjectURL(file);
+      img.onload = () => processUploadedFile(img);
+    }
+  };
+
+  const processUploadedFile = async (img) => {
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    canvas.width = img.width;
+    canvas.height = img.height;
+    context.drawImage(img, 0, 0);
+
+    const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.5 });
+    const detections = await faceapi.detectAllFaces(img, options).withFaceLandmarks();
+
+    const displaySize = { width: img.width, height: img.height };
+    const resizedDetections = faceapi.resizeResults(detections, displaySize);
+
+    if (resizedDetections.length > 0) {
+      const detection = resizedDetections[0];
+      const { landmarks } = detection;
+      const nose = landmarks.getNose();
+      const jaw = landmarks.getJawOutline();
+      const leftEye = landmarks.getLeftEye();
+      const rightEye = landmarks.getRightEye();
+
+      const faceWidth = jaw[16].x - jaw[0].x;
+      const faceHeight = jaw[8].y - nose[0].y;
+
+      const centerX = (leftEye[0].x + rightEye[3].x) / 2;
+      const centerY = (leftEye[0].y + rightEye[3].y) / 2;
+      const angle = Math.atan2(rightEye[0].y - leftEye[0].y, rightEye[0].x - leftEye[0].x);
+
+      context.save();
+      context.translate(centerX, centerY);
+      context.rotate(angle);
+      context.translate(-centerX, -centerY);
+
+      const offsetX = jaw[0].x - faceWidth * 0.7; // Adjusted for better coverage
+      const offsetY = nose[0].y - faceHeight * 1.5; // Adjusted for better coverage
+
+      context.drawImage(overlayImageRef.current, offsetX, offsetY, faceWidth * 2.5, faceHeight * 3.5); // Adjusted scale
+      context.restore();
+    }
+
+    const watermarkText = "snort";
+    context.font = "30px Arial";
+    context.fillStyle = "rgba(255, 255, 255, 0.5)";
+    context.textAlign = "right";
+    context.textBaseline = "bottom";
+    context.fillText(watermarkText, canvas.width - 10, canvas.height - 10);
+
+    const image = canvas.toDataURL("image/png");
+    await addCustomImage(image);
+    setCapturedImage(image);
+    navigate("/captured");
   };
 
   return (
@@ -244,6 +308,18 @@ const Hero = ({ setCapturedImage }) => {
           >
             VIEW CAPTURED IMAGES
           </button>
+          <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          style={{ display: "none" }}
+          onChange={handleFileChange}
+        />
+        <button 
+        className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-700 transition"
+        onClick={() => fileInputRef.current.click()}>
+          Upload Image
+        </button>
         </div>
         <div className="video-container relative">
           <video

@@ -8,11 +8,14 @@ import {
   deleteImageById,
   getAllVideos,
   deleteVideoById,
+  getAllCustomImages, // Updated import
+  deleteCustomImageById, // Updated import
 } from "./db"; // Assuming db.js is in the same directory
 
 const CapturedImagePage = () => {
   const [images, setImages] = useState([]);
   const [videos, setVideos] = useState([]);
+  const [customImages, setCustomImages] = useState([]); // State for custom images
   const [selectedImageIndex, setSelectedImageIndex] = useState(null);
   const navigate = useNavigate();
 
@@ -20,9 +23,11 @@ const CapturedImagePage = () => {
     const fetchData = async () => {
       const storedImages = await getAllImages();
       const storedVideos = await getAllVideos();
-      console.log(storedVideos);
+      const storedCustomImages = await getAllCustomImages(); // Fetch custom images
+      console.log(storedCustomImages);
       setImages(storedImages);
       setVideos(storedVideos);
+      setCustomImages(storedCustomImages); // Update custom images state
       setSelectedImageIndex(null);
     };
     fetchData();
@@ -63,6 +68,12 @@ const CapturedImagePage = () => {
     await deleteVideoById(id);
     const updatedVideos = await getAllVideos();
     setVideos(updatedVideos);
+  };
+
+  const deleteCustomImage = async (id) => {
+    await deleteCustomImageById(id); // Delete custom image
+    const updatedCustomImages = await getAllCustomImages(); // Fetch updated custom images
+    setCustomImages(updatedCustomImages); // Update state with updated custom images
   };
 
   return (
@@ -147,6 +158,48 @@ const CapturedImagePage = () => {
             );
           })}
         </div>
+
+
+
+        <h4 className="text-white text-lg mb-4">User uploaded Images</h4>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
+          {customImages.length === 0 && (
+            <p className="text-white col-span-full">No custom images captured</p>
+          )}
+          {customImages.map(({ id, image }, index) => (
+            <div key={`custom-image-${id}`} className="relative group">
+              <img
+                src={image}
+                alt={`Custom Captured ${index}`}
+                className="w-full h-auto cursor-pointer rounded-lg"
+                
+              />
+              <div className="absolute inset-0 flex justify-center items-center gap-4 opacity-0 group-hover:opacity-100 transition-opacity bg-black bg-opacity-50 rounded-lg pointer-events-none">
+                <button
+                  className="p-2 bg-white rounded-full text-black pointer-events-auto"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    saveMedia(image);
+                  }}
+                >
+                  <FaSave />
+                </button>
+                <button
+                  className="p-2 bg-white rounded-full text-red-500 pointer-events-auto"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    deleteCustomImage(id);
+                  }}
+                >
+                  <MdDelete />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+
+
+
       </div>
       {selectedImageIndex !== null && (
         <ImageModal
