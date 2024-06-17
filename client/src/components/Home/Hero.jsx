@@ -1,8 +1,12 @@
 import React, { useRef, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaCamera } from "react-icons/fa";
+import { FaCamera, FaStopCircle, FaPlayCircle } from "react-icons/fa";
 import { MainImg } from "../../assets/export"; // Adjust if needed
 import * as faceapi from "face-api.js";
+import {
+  addImage,
+  addVideo,
+} from "./db"; // Assuming db.js is in the same directory
 
 const Hero = ({ setCapturedImage }) => {
   const [stream, setStream] = useState(null);
@@ -25,7 +29,7 @@ const Hero = ({ setCapturedImage }) => {
     };
     loadModels();
 
-    overlayImageRef.current.src = "/monl.png"; // Path to your overlay image
+    overlayImageRef.current.src = "/snort.png"; // Path to your overlay image
   }, []);
 
   const startCamera = async () => {
@@ -112,12 +116,22 @@ const Hero = ({ setCapturedImage }) => {
         context.rotate(angle);
         context.translate(-centerX, -centerY);
 
-        const offsetX = jaw[0].x - faceWidth * 0.5; // Adjusted for better coverage
+        const offsetX = jaw[0].x - faceWidth * 0.7; // Adjusted for better coverage
         const offsetY = nose[0].y - faceHeight * 1.4; // Adjusted for better coverage
 
-        context.drawImage(overlayImageRef.current, offsetX, offsetY, faceWidth * 2, faceHeight * 3); // Adjusted scale
+        context.drawImage(overlayImageRef.current, offsetX, offsetY, faceWidth * 2.5, faceHeight * 3.2); // Adjusted scale
         context.restore();
       }
+
+
+      // Add watermark to each frame
+      const watermarkText = "snort";
+      context.font = "30px Arial";
+      context.fillStyle = "rgba(255, 255, 255, 0.5)";
+      context.textAlign = "right";
+      context.textBaseline = "bottom";
+      context.fillText(watermarkText, canvas.width - 10, canvas.height - 10);
+
 
       requestAnimationFrame(drawLoop);
     };
@@ -139,14 +153,14 @@ const Hero = ({ setCapturedImage }) => {
       chunks.push(event.data);
     };
 
-    mediaRecorderRef.current.onstop = () => {
+    mediaRecorderRef.current.onstop = async () => {
       const blob = new Blob(chunks, { type: "video/webm" });
       const url = URL.createObjectURL(blob);
 
-      let storedVideos = JSON.parse(localStorage.getItem("capturedVideos")) || [];
-      storedVideos.push(url);
-      localStorage.setItem("capturedVideos", JSON.stringify(storedVideos));
+      await addVideo({ url, blob });
       chunks = [];
+      setIsRecording(false);
+      navigate("/captured"); // Redirect to capture page after recording stops
     };
 
     mediaRecorderRef.current.start();
@@ -159,12 +173,11 @@ const Hero = ({ setCapturedImage }) => {
     setIsRecording(false);
   };
 
-  const captureImage = (resizedDetections) => {
+  const captureImage = async (resizedDetections) => {
     if (videoRef.current && canvasRef.current) {
       const context = canvasRef.current.getContext("2d");
       canvasRef.current.width = videoRef.current.videoWidth;
       canvasRef.current.height = videoRef.current.videoHeight;
-      context.filter = filter;
       context.drawImage(videoRef.current, 0, 0, canvasRef.current.width, canvasRef.current.height);
 
       const overlayImage = overlayImageRef.current;
@@ -188,10 +201,10 @@ const Hero = ({ setCapturedImage }) => {
         context.rotate(angle);
         context.translate(-centerX, -centerY);
 
-        const offsetX = jaw[0].x - faceWidth * 0.4; // Adjusted for better coverage
+        const offsetX = jaw[0].x - faceWidth * 0.7; // Adjusted for better coverage
         const offsetY = nose[0].y - faceHeight * 1.4; // Adjusted for better coverage
 
-        context.drawImage(overlayImage, offsetX, offsetY, faceWidth * 2, faceHeight * 3); // Adjusted scale
+        context.drawImage(overlayImage, offsetX, offsetY, faceWidth * 2.5, faceHeight * 3.2); // Adjusted scale
         context.restore();
       }
 
@@ -204,18 +217,12 @@ const Hero = ({ setCapturedImage }) => {
 
       const imageData = canvasRef.current.toDataURL("image/png");
       setCapturedImage(imageData);
-      saveImageToLocalStorage(imageData);
+      await addImage(imageData);
 
       setTimeout(() => {
         navigate("/captured");
       }, 300);
     }
-  };
-
-  const saveImageToLocalStorage = (imageData) => {
-    let images = JSON.parse(localStorage.getItem("capturedImages")) || [];
-    images.push(imageData);
-    localStorage.setItem("capturedImages", JSON.stringify(images));
   };
 
   return (
@@ -232,12 +239,6 @@ const Hero = ({ setCapturedImage }) => {
             OPEN CAMERA
           </button>
           <button
-            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-700 transition"
-            onClick={isRecording ? stopRecording : startRecording}
-          >
-            {isRecording ? "Stop Recording" : "Start Recording"}
-          </button>
-          <button
             className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-700 transition"
             onClick={() => navigate("/captured")}
           >
@@ -248,17 +249,25 @@ const Hero = ({ setCapturedImage }) => {
           <video
             ref={videoRef}
             autoPlay
-            style={{ display: stream ? "block" : "none", filter: filter }}
+            style={{ display: stream ? "block" : "none" }}
             className="rounded-lg"
           />
           <canvas ref={canvasRef} style={{ position: "absolute", top: 0, left: 0 }} />
           {stream && (
-            <button
-              className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-red-500 text-white p-4 rounded-full hover:bg-red-700 transition"
-              onClick={() => captureImage(resizedDetections)}
-            >
-              <FaCamera className="w-8 h-8" />
-            </button>
+            <>
+              <button
+                className="absolute bottom-4 left-1/4 transform -translate-x-1/2 bg-red-500 text-white p-4 rounded-full hover:bg-red-700 transition"
+                onClick={() => captureImage(resizedDetections)}
+              >
+                <FaCamera className="w-8 h-8" />
+              </button>
+              <button
+            className="absolute bottom-4 right-1/4 bg-red-500 text-white p-4 rounded-full hover:bg-red-700 transition"
+            onClick={isRecording ? stopRecording : startRecording}
+          >
+            {isRecording ? <FaStopCircle className="w-8 h-8" /> : <FaPlayCircle className="w-8 h-8" />}
+          </button>
+            </>
           )}
         </div>
       </div>
