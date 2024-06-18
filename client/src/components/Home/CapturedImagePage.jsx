@@ -12,12 +12,29 @@ import {
   deleteCustomImageById, // Updated import
 } from "./db"; // Assuming db.js is in the same directory
 
+import { FaShareAlt } from "react-icons/fa";
+import Modal from "react-modal";
+import {
+  FacebookShareButton,
+  TwitterShareButton,
+
+  FacebookIcon,
+  TwitterIcon,
+
+} from "react-share";
+
+// Set the main application element for react-modal
+Modal.setAppElement("#root"); // React model use purose of better functionalty of model 
+
 const CapturedImagePage = () => {
   const [images, setImages] = useState([]);
   const [videos, setVideos] = useState([]);
   const [customImages, setCustomImages] = useState([]); // State for custom images
   const [selectedImageIndex, setSelectedImageIndex] = useState(null);
   const navigate = useNavigate();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [currentUrl, setCurrentUrl] = useState("");
+
 
   useEffect(() => {
     const fetchData = async () => {
@@ -76,6 +93,45 @@ const CapturedImagePage = () => {
     setCustomImages(updatedCustomImages); // Update state with updated custom images
   };
 
+
+  const openShareModal = (base64Image) => {
+    const blob = base64ToBlob(base64Image);
+    const imageUrl = URL.createObjectURL(blob);
+    setCurrentUrl(imageUrl);
+    setIsModalOpen(true);
+  };
+
+  const closeShareModal = () => {
+    setIsModalOpen(false);
+    setCurrentUrl("");
+    URL.revokeObjectURL(currentUrl); // Clean up URL to free memory
+  };
+
+  const base64ToBlob = (base64Data) => {
+    const byteCharacters = atob(base64Data.split(",")[1]);
+    const byteArrays = [];
+
+    for (let offset = 0; offset < byteCharacters.length; offset += 512) {
+      const slice = byteCharacters.slice(offset, offset + 512);
+
+      const byteNumbers = new Array(slice.length);
+      for (let i = 0; i < slice.length; i++) {
+        byteNumbers[i] = slice.charCodeAt(i);
+      }
+
+      const byteArray = new Uint8Array(byteNumbers);
+      byteArrays.push(byteArray);
+    }
+
+    return new Blob(byteArrays, { type: "image/png" });
+  };
+
+  
+
+
+
+
+
   return (
     <div className="bg-mainBG h-auto w-full flex flex-col items-center p-4">
       <div className="flex flex-row items-center w-full mb-4">
@@ -120,6 +176,12 @@ const CapturedImagePage = () => {
                 >
                   <MdDelete />
                 </button>
+                <button
+                className="btn btn-primary p-2 bg-white rounded-full text-black pointer-events-auto"
+                onClick={() => openShareModal(image)}
+              >
+                <FaShareAlt />
+              </button>
               </div>
             </div>
           ))}
@@ -153,6 +215,12 @@ const CapturedImagePage = () => {
                   >
                     <MdDelete />
                   </button>
+                  <button
+                className="btn btn-primary p-2 bg-white rounded-full text-black pointer-events-auto"
+                onClick={() => openShareModal(videoURL)}
+              >
+                <FaShareAlt />
+              </button>
                 </div>
               </div>
             );
@@ -193,6 +261,12 @@ const CapturedImagePage = () => {
                 >
                   <MdDelete />
                 </button>
+                <button
+                className="btn btn-primary p-2 bg-white rounded-full text-black pointer-events-auto"
+                onClick={() => openShareModal(image)}
+              >
+                <FaShareAlt />
+              </button>
               </div>
             </div>
           ))}
@@ -201,6 +275,30 @@ const CapturedImagePage = () => {
 
 
       </div>
+
+
+      <Modal
+        isOpen={isModalOpen}
+        onRequestClose={closeShareModal}
+        contentLabel="Share Modal"
+        className="Modal"
+        overlayClassName="Overlay"
+      >
+        <h2 className="text-2xl mb-4">Share</h2>
+        <div className="flex justify-between gap-4 ">
+          <FacebookShareButton url={currentUrl}>
+            <FacebookIcon size={32} round />
+          </FacebookShareButton>
+          <TwitterShareButton url={currentUrl}>
+            <TwitterIcon size={32} round />
+          </TwitterShareButton>
+        </div>
+        <button className="btn btn-secondary mt-4" onClick={closeShareModal}>
+          Close
+        </button>
+      </Modal>
+
+
       {selectedImageIndex !== null && (
         <ImageModal
           image={images[selectedImageIndex].image}

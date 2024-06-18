@@ -16,7 +16,9 @@
     "idb": "^8.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-modal": "^3.16.1",
     "react-router-dom": "^6.23.1",
+    "react-share": "^5.1.0",
     "three": "^0.165.0"
   },
   "devDependencies": {
