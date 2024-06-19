@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import ImageModal from "./ImageModal";
 import { MdDelete } from "react-icons/md";
-import { FaSave, FaShareAlt } from "react-icons/fa";
+import { FaSave, FaShareAlt, FaCopy } from "react-icons/fa";
 import {
   getAllImages,
   deleteImageById,
@@ -29,6 +29,9 @@ const CapturedImagePage = () => {
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentUrl, setCurrentUrl] = useState("");
+  const [currentText, setCurrentText] = useState("");
+
+  const predefinedText = "You are Snortified!";
 
   useEffect(() => {
     const fetchData = async () => {
@@ -88,16 +91,18 @@ const CapturedImagePage = () => {
     setCustomImages(updatedCustomImages);
   };
 
-  const openShareModal = (base64Image) => {
+  const openShareModal = (base64Image,text) => {
     const blob = base64ToBlob(base64Image);
     const imageUrl = URL.createObjectURL(blob);
     setCurrentUrl(imageUrl);
+    setCurrentText(text);
     setIsModalOpen(true);
   };
 
   const closeShareModal = () => {
     setIsModalOpen(false);
     setCurrentUrl("");
+    setCurrentText("");
     URL.revokeObjectURL(currentUrl);
   };
 
@@ -114,6 +119,15 @@ const CapturedImagePage = () => {
       byteArrays.push(byteArray);
     }
     return new Blob(byteArrays, { type: "image/png" });
+  };
+
+  const copyToClipboard = async () => {
+    try {
+      await navigator.clipboard.writeText(currentUrl);
+      alert("URL copied to clipboard!");
+    } catch (err) {
+      console.error("Failed to copy:", err);
+    }
   };
 
   return (
@@ -168,7 +182,7 @@ const CapturedImagePage = () => {
                 </button>
                 <button
                   className="btn btn-primary p-2 bg-white rounded-full text-black pointer-events-auto"
-                  onClick={() => openShareModal(image)}
+                  onClick={() => openShareModal(image, predefinedText)}
                 >
                   <FaShareAlt />
                 </button>
@@ -217,7 +231,7 @@ const CapturedImagePage = () => {
                   </button>
                   <button
                     className="btn btn-primary p-2 bg-white rounded-full text-black pointer-events-auto"
-                    onClick={() => openShareModal(videoURL)}
+                    onClick={() => openShareModal(videoURL, predefinedText)}
                   >
                     <FaShareAlt />
                   </button>
@@ -263,7 +277,7 @@ const CapturedImagePage = () => {
                 </button>
                 <button
                   className="btn btn-primary p-2 bg-white rounded-full text-black pointer-events-auto"
-                  onClick={() => openShareModal(image)}
+                  onClick={() => openShareModal(image, predefinedText)}
                 >
                   <FaShareAlt />
                 </button>
@@ -277,25 +291,40 @@ const CapturedImagePage = () => {
         isOpen={isModalOpen}
         onRequestClose={closeShareModal}
         contentLabel="Share Modal"
-        className="Modal px-16 py-4 flex flex-col gap-0"
-        overlayClassName="Overlay"
+        className="bg-white p-4 rounded-lg max-w-md mx-auto my-8 outline-none"
       >
-        <div className="flex flex-row pb-6">
-          <h2 className="text-3xl text-center w-full font-['Archivo-Bold']">Share</h2>
-        </div>
-
-        <div className="flex justify-between gap-4 ">
-          <FacebookShareButton url={currentUrl}>
-            <FacebookIcon className="transform hover:scale-150 transition duration-300 ease-in-out" size={40} round />
+        <h2 className="text-2xl mb-4">Share this media</h2>
+        <div className="flex justify-center gap-10">
+          <FacebookShareButton url={currentUrl} quote={currentText}>
+            <FacebookIcon size={50} round />
           </FacebookShareButton>
-          <TwitterShareButton url={currentUrl}>
-            <TwitterIcon className="transform hover:scale-150 transition duration-300 ease-in-out" size={40} round />
+          <TwitterShareButton url={currentUrl} title={currentText}>
+            <TwitterIcon size={50} round />
           </TwitterShareButton>
+          
+        </div>
+        <div className="flex justify-center items-center gap-4 mt-4">
+          <input
+            id="copy-url-input"
+            type="text"
+            value={currentUrl}
+            readOnly
+            className="bg-gray-200 px-2 py-1 rounded-md  w-full m-auto"
+          />
+          <button
+            onClick={copyToClipboard}
+            className="bg-black text-white px-4 py-2 rounded-full"
+          >
+            <FaCopy />
+            {/* <span className="ml-2">Copy URL</span> */}
+          </button>
         </div>
         <button
-          className="btn btn-secondary text-sm"
           onClick={closeShareModal}
-        ></button>
+          className="mt-4 bg-red-500 text-white px-4 py-2 rounded-full"
+        >
+          Close
+        </button>
       </Modal>
 
       {selectedImageIndex !== null && (
