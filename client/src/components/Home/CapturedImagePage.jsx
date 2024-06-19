@@ -17,7 +17,6 @@ import Modal from "react-modal";
 import {
   FacebookShareButton,
   TwitterShareButton,
-
   FacebookIcon,
   TwitterIcon,
 
