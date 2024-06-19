@@ -139,7 +139,7 @@ const CapturedImagePage = () => {
         >
           BACK
         </button>
-        <h3 className="text-white pt-2 text-4xl mx-auto font-['Archivo-Bold']">
+        <h3 className="text-white pt-20 text-3xl md:pt-2 md:text-4xl md:mx-auto font-['Archivo-Bold']">
           All Images and Videos
         </h3>
       </div>

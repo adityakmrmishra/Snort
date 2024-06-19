@@ -381,7 +381,7 @@ const Hero = ({ setCapturedImage }) => {
             className="bg-red-500 text-white px-4 py-2 rounded-full hover:bg-red-700 transition"
             onClick={() => fileInputRef.current.click()}
           >
-          {isProcessing ? "Processing...." : "UPLOAD IMAGE"}
+            {isProcessing ? "Processing...." : "UPLOAD IMAGE"}
           </button>
         </div>
         <div className="video-container relative w-full max-w-xl">
@@ -419,7 +419,7 @@ const Hero = ({ setCapturedImage }) => {
       </div>
 
       <img
-        className="pt-12 md:pt-0 md:w-1/2 order-1 md:order-2"
+        className="pt-12 md:pt-0 md:w-1/2 md:order-1 order-2"
         src={MainImg}
         alt="MainImg"
       />
