@@ -353,11 +353,11 @@ const Hero = ({ setCapturedImage }) => {
 
   return (
     <div className="bg-mainBG w-full min-h-screen flex flex-col items-center md:flex-row md:justify-around">
-      <div className="text-white flex flex-col items-center w-full md:w-1/2 px-4 md:px-0">
-        <p className="text-5xl md:text-7xl pt-2 md:pt-0 mb-10 pb-10 text-center">
+      <div className="text-white flex flex-col items-center w-full md:w-1/2 px-4 md:px-0 order-2 md:order-1">
+        <p className="text-5xl md:text-7xl pt-2 md:pt-0 mb-10 pb-10 text-center font-['Anybody-Bold']">
           Become Snortified
         </p>
-        <div className="flex flex-col md:flex-row flex-wrap justify-center gap-4 mb-4">
+        <div className="flex flex-col md:flex-row flex-wrap justify-center gap-4 mb-4 font-['Archivo-bold']">
           <button
             className="bg-blue-900 text-white custom-zigzag-border px-8 py-4 rounded-full hover:bg-blue-700 transition"
             onClick={startCamera}
@@ -393,7 +393,7 @@ const Hero = ({ setCapturedImage }) => {
           />
           <canvas
             ref={canvasRef}
-            className="absolute top-0 left-0 w-full h-full"
+            className="absolute rounded-lg top-0 left-0 w-full h-full"
           />
           {stream && (
             <>
@@ -418,7 +418,11 @@ const Hero = ({ setCapturedImage }) => {
         </div>
       </div>
 
-      <img className="pt-12 md:pt-0 md:w-1/2" src={MainImg} alt="MainImg" />
+      <img
+        className="pt-12 md:pt-0 md:w-1/2 order-1 md:order-2"
+        src={MainImg}
+        alt="MainImg"
+      />
     </div>
   );
 };
