@@ -18,6 +18,7 @@ const Hero = ({ setCapturedImage }) => {
   const overlayImageRef = useRef(new Image());
   const lastLandmarksRef = useRef(null);
   const fileInputRef = useRef(null);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   useEffect(() => {
     const loadModels = async () => {
@@ -37,16 +38,23 @@ const Hero = ({ setCapturedImage }) => {
     }
 
     try {
-      const mediaStream = await navigator.mediaDevices.getUserMedia({
-        video: true,
-      });
-      setStream(mediaStream);
-      if (videoRef.current) {
-        videoRef.current.srcObject = mediaStream;
-        videoRef.current.addEventListener("play", handleVideoPlay);
+      if (window.isSecureContext) {
+        const mediaStream = await navigator.mediaDevices.getUserMedia({
+          video: true,
+        });
+        setStream(mediaStream);
+        if (videoRef.current) {
+          videoRef.current.srcObject = mediaStream;
+          videoRef.current.addEventListener("play", handleVideoPlay);
+        }
+      } else {
+        alert("This feature requires a secure context (HTTPS).");
       }
     } catch (err) {
       console.error("Error accessing the camera", err);
+      alert(
+        `Error accessing the camera: ${err.message}. Please ensure you have granted camera permissions and are accessing the site over HTTPS.`
+      );
     }
   };
 
@@ -268,6 +276,7 @@ const Hero = ({ setCapturedImage }) => {
   const handleFileChange = async (event) => {
     const file = event.target.files[0];
     if (file) {
+      setIsProcessing(true); // Set processing state to true
       const img = new Image();
       img.src = URL.createObjectURL(file);
       img.onload = () => processUploadedFile(img);
@@ -338,6 +347,7 @@ const Hero = ({ setCapturedImage }) => {
     const image = canvas.toDataURL("image/png");
     await addCustomImage(image);
     setCapturedImage(image);
+    setIsProcessing(false); // Set processing state to false
     navigate("/captured");
   };
 
@@ -367,12 +377,12 @@ const Hero = ({ setCapturedImage }) => {
             style={{ display: "none" }}
             onChange={handleFileChange}
           />
-          {/* <button
-            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-700 transition"
+          <button
+            className="bg-red-500 text-white px-4 py-2 rounded-full hover:bg-red-700 transition"
             onClick={() => fileInputRef.current.click()}
           >
-            Upload Image
-          </button> */}
+          {isProcessing ? "Processing...." : "UPLOAD IMAGE"}
+          </button>
         </div>
         <div className="video-container relative w-full max-w-xl">
           <video
